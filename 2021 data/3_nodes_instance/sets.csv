@@ -1,0 +1,15 @@
+Nodes,days in scenario ,Scenarios probabiblity,Time periods,VRES sources,Conventional sources,Producers 
+1,90,0.25,12,solar,biomass,1
+2,92,0.25,12,wind_onshore,nuclear,2
+3,92,0.25,12,wind_offshore,coal,
+,91,0.25,12,,gas_cc,
+,,,12,,gas_oc,
+,,,12,,,
+,,,12,,,
+,,,12,,,
+,,,12,,,
+,,,12,,,
+,,,12,,,
+,,,12,,,
+,,,12,,,
+,,,12,,,
