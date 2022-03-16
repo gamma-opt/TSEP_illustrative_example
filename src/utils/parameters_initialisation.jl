@@ -106,6 +106,11 @@ M_lines = Matrix(DataFrame(CSV.File(data_src_link * "/transmission_lines/" * "li
 M_lines = M_lines./scaling_factor
 #TRANSM = transmission_parameters(round.(L_max, digits = max_digits), round.(M_lines, digits = max_digits), round.(I_lines, digits = max_digits), round.(B_lines, digits = max_digits))
 TRANSM = transmission_parameters(L_max, M_lines, I_lines, B_lines)
+
+
+## Budget limits for generation expansion (for each producer)
+GEN_BUDGET = Array(DataFrame(CSV.File(data_src_link * "/generation_budget_limits/budget_limits.csv"))[!,1:N_I])
+
 ## Conventional generation
 
 # Maximum generation capacity at each node for conventional energy
@@ -170,11 +175,6 @@ I_conv = round.(I_conv, digits = 4)
 #scalling 
 #I_conv = I_conv./scaling_factor
 
-# Budget limits for the conventional units generation expansion (for each node and each producer)
-B_conv = Matrix(DataFrame(CSV.File(data_src_link * "/conventional_generation_units/budget_limits/budget_limits.csv"))[!,1:N_I])
-#scalling 
-#B_conv = B_conv./scaling_factor
-
 # Maximum ramp-up rate for conventional units 
 R_up_conv = Array{Float64}(undef, N_nodes, N_I, N_E )
 for i in 1:N_I
@@ -197,7 +197,7 @@ CO2_tax = Matrix(DataFrame(CSV.File(data_src_link * "/conventional_generation_un
 #scalling 
 #CO2_tax = CO2_tax./scaling_factor
 #CONV = conventional_generation_parameters(round.(G_max_E, digits = max_digits), round.(M_conv, digits = max_digits), round.(I_conv, digits = max_digits), round.(B_conv, digits = max_digits), round.(C_conv, digits = max_digits), round.(R_up_conv, digits = max_digits), round.(R_down_conv, digits = max_digits), round.(CO2_tax, digits = max_digits))
-CONV = conventional_generation_parameters(G_max_E, M_conv, I_conv, B_conv, C_conv, R_up_conv, R_down_conv, CO2_tax)
+CONV = conventional_generation_parameters(G_max_E, M_conv, I_conv, C_conv, R_up_conv, R_down_conv, CO2_tax)
 
 ## VRES generation
 
@@ -226,7 +226,7 @@ end
 # lifetime at each node for VRES units 
 Lifetime_VRES = Array{Float64}(undef, N_nodes, N_I, N_R)
 for i in 1:N_I
-    Lifetime_VRES[:,i,:] = Matrix(DataFrame(CSV.File(data_src_link * "/conventional_generation_units/lifetime/" * "lifetime_producer_"* string(i)* ".csv"))[!,2:N_R+1])
+    Lifetime_VRES[:,i,:] = Matrix(DataFrame(CSV.File(data_src_link * "/VRES_generation_units/lifetime/" * "lifetime_producer_"* string(i)* ".csv"))[!,2:N_R+1])
 end
 
 # Annualised investment costs at each node for VRES units 
@@ -237,11 +237,11 @@ I_VRES = equivalent_annual_cost.(Investment_VRES .* 1000, Lifetime_VRES, interes
 
 I_VRES = round.(I_VRES, digits = 4)
 
-# Budget limits for the VRES units generation expansion (for each node and each producer)
-B_VRES = Matrix(DataFrame(CSV.File(data_src_link * "/VRES_generation_units/budget_limits/budget_limits.csv"))[!,1:N_I])
-#scalling 
-#B_VRES = B_VRES./scaling_factor
-
+#reading the data about vres investemnt costs incentives
+incentives = Array(DataFrame(CSV.File(data_src_link * "/VRES_generation_units/incentives.csv"))[!,2])
+for n = 1:N_nodes
+    I_VRES[n,:,:] = I_VRES[n,:,:].*(1-incentives[n]/100)
+end
 
 # Availability factor 
 # create a structure to keep the availability factor values
@@ -264,6 +264,6 @@ end
 
 
 #VRES =  VRES_parameters(round.(G_max_VRES, digits = max_digits), round.(M_VRES,digits = max_digits), round.(I_VRES, digits = max_digits), round.(B_VRES, digits = max_digits), round.(A_VRES, digits = max_digits))
-VRES =  VRES_parameters(G_max_VRES, M_VRES, I_VRES, B_VRES, A_VRES)
+VRES =  VRES_parameters(G_max_VRES, M_VRES, I_VRES, A_VRES)
 
-input_parameters = initial_parameters(N_scen, N_nodes, N_T, N_R, N_E, N_I, S_prob, T, id_slope, id_intercept, VRES, CONV, TRANSM)
+input_parameters = initial_parameters(N_scen, N_nodes, N_T, N_R, N_E, N_I, S_prob, T, id_slope, id_intercept, GEN_BUDGET, VRES, CONV, TRANSM)

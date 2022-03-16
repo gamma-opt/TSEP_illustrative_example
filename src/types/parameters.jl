@@ -15,7 +15,6 @@ mutable struct VRES_parameters
     installed_capacities::Array{Float64}
     maintenance_costs::Array{Float64}
     investment_costs::Array{Float64}
-    budget_limits::Array{Float64}
     availability_factor::Array{Float64}
 end
 
@@ -37,7 +36,6 @@ mutable struct conventional_generation_parameters
     installed_capacities::Array{Float64}
     maintenance_costs::Array{Float64}
     investment_costs::Array{Float64}
-    budget_limits::Array{Float64}
     operational_costs::Array{Float64}
     ramp_up::Array{Float64}
     ramp_down::Array{Float64}
@@ -75,6 +73,7 @@ Stores attributes for generating JuMP model. Has the following fields:
 * time_periods::Vector{Float64}                     Vector of the time periods values (h)
 * id_slope::Array{Float64}                          Slope of the inverse demand function
 * id_intercept::Array{Float64}                      Intercept of the inverse demand function
+* gen_budget::Array{Float64}                        Generation expansion budget defined for each GenCo
 * vres::VRES_parameters                             VRES related parameters
 * conv::conventional_generation_parameters          Conventional generation related parameters 
 * transm::transmission_parameters                   Transmission lines related paramters
@@ -98,6 +97,9 @@ mutable struct initial_parameters
 
     # intercept of the inverse demand function
     id_intercept::Array{Float64}
+
+    # generation expansion budget
+    gen_budget::Array{Float64}
 
     # VRES parameters 
     vres::VRES_parameters
