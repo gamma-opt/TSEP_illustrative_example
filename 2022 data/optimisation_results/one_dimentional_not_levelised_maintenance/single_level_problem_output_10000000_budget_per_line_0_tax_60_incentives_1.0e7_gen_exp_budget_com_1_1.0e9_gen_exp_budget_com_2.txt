@@ -1,0 +1,222 @@
+OBJECTIVE FUNCTION VALUE  1.823494580909e9
+
+
+TRANSMISSION CAPACITY EXPANSION
+
+
+3×4 DataFrame
+ Row │ node    node_1   node_2   node_3
+     │ String  Float64  Float64  Float64
+─────┼───────────────────────────────────
+   1 │ 1           0.0    0.0      0.0
+   2 │ 2           0.0    0.0    478.923
+   3 │ 3           0.0  478.923    0.0
+
+
+VRES CAPACITY EXPANSION
+
+
+PRODUCER 1
+3×2 DataFrame
+ Row │ node    VRES_1
+     │ String  Float64
+─────┼─────────────────
+   1 │ 1        85.688
+   2 │ 2        88.372
+   3 │ 3         0.0
+
+
+PRODUCER 2
+3×2 DataFrame
+ Row │ node    VRES_1
+     │ String  Float64
+─────┼─────────────────
+   1 │ 1       8606.64
+   2 │ 2       7686.24
+   3 │ 3          0.0
+
+
+
+
+CONV CAPACITY EXPANSION
+
+
+PRODUCER 1
+3×2 DataFrame
+ Row │ node    conv_1
+     │ String  Float64
+─────┼─────────────────
+   1 │ 1         0.0
+   2 │ 2         0.0
+   3 │ 3       231.963
+
+
+PRODUCER 2
+3×2 DataFrame
+ Row │ node    conv_1
+     │ String  Float64
+─────┼─────────────────
+   1 │ 1          0.0
+   2 │ 2          0.0
+   3 │ 3       9239.75
+
+
+
+
+VRES GENERATION
+
+
+PRODUCER 1
+scenario 1
+3×2 DataFrame
+ Row │ node    VRES_1
+     │ String  Float64
+─────┼─────────────────
+   1 │ 1       72495.2
+   2 │ 2       89078.5
+   3 │ 3           0.0
+
+
+PRODUCER 2
+scenario 1
+3×2 DataFrame
+ Row │ node    VRES_1
+     │ String  Float64
+─────┼───────────────────
+   1 │ 1       6.19678e6
+   2 │ 2       7.75579e6
+   3 │ 3       0.0
+
+
+
+
+CONV GENERATION
+
+
+PRODUCER 1
+scenario 1
+3×2 DataFrame
+ Row │ node    conv_1
+     │ String  Float64
+─────┼───────────────────
+   1 │ 1       0.0
+   2 │ 2       0.0
+   3 │ 3       3.41226e5
+
+
+PRODUCER 2
+scenario 1
+3×2 DataFrame
+ Row │ node    conv_1
+     │ String  Float64
+─────┼───────────────────
+   1 │ 1       0.0
+   2 │ 2       0.0
+   3 │ 3       1.33124e7
+
+
+
+
+ENERGY FLOW
+
+
+flow: 1 -> 2 
+1×3 DataFrame
+ Row │ scenario  time_1   time_2
+     │ Int64     Float64  Float64
+─────┼────────────────────────────
+   1 │        1   -720.0   -720.0
+
+
+flow: 2 -> 1 
+1×3 DataFrame
+ Row │ scenario  time_1   time_2
+     │ Int64     Float64  Float64
+─────┼────────────────────────────
+   1 │        1     -0.0      0.0
+
+
+flow: 1 -> 3 
+1×3 DataFrame
+ Row │ scenario  time_1   time_2
+     │ Int64     Float64  Float64
+─────┼────────────────────────────
+   1 │        1    720.0    720.0
+
+
+flow: 3 -> 1 
+1×3 DataFrame
+ Row │ scenario  time_1   time_2
+     │ Int64     Float64  Float64
+─────┼────────────────────────────
+   1 │        1      0.0      0.0
+
+
+flow: 2 -> 3 
+1×3 DataFrame
+ Row │ scenario  time_1     time_2
+     │ Int64     Float64    Float64
+─────┼────────────────────────────────
+   1 │        1  3.45545e5  3.45545e5
+
+
+flow: 3 -> 2 
+1×3 DataFrame
+ Row │ scenario  time_1   time_2
+     │ Int64     Float64  Float64
+─────┼────────────────────────────
+   1 │        1      0.0     -0.0
+
+
+
+
+TOTAL PRODUCTION/CONSUMPTION
+
+
+1×5 DataFrame
+ Row │ scenario  VRES_generation  VRES_share  conv_generation  consumption
+     │ Int64     Float64          Float64     Float64          Float64
+─────┼─────────────────────────────────────────────────────────────────────
+   1 │        1        1.41141e7        51.0        1.36537e7    2.77678e7
+
+
+NODES' PRICES
+
+
+NODE 1
+1×3 DataFrame
+ Row │ scenario  time_1   time_2
+     │ Int64     Float64  Float64
+─────┼────────────────────────────
+   1 │        1  172.927  172.927
+
+
+NODE 2
+1×3 DataFrame
+ Row │ scenario  time_1   time_2
+     │ Int64     Float64  Float64
+─────┼────────────────────────────
+   1 │        1  160.662  160.662
+
+
+NODE 3
+1×3 DataFrame
+ Row │ scenario  time_1   time_2
+     │ Int64     Float64  Float64
+─────┼────────────────────────────
+   1 │        1   157.64   157.64
+
+
+TSO'S EXPENCES
+
+
+1×2 DataFrame
+ Row │ INV COSTS   OP COSTS
+     │ Float64     Float64
+─────┼────────────────────────
+   1 │ -9.99999e6  -2.03624e5
+
+
+COMPANIES REVENUES/COSTS
+
+

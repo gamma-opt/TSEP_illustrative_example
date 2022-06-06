@@ -1,0 +1,229 @@
+OBJECTIVE FUNCTION VALUE  -7.3453840845e7
+
+
+TRANSMISSION CAPACITY EXPANSION
+
+
+3×4 DataFrame
+ Row │ node    node_1   node_2   node_3
+     │ String  Float64  Float64  Float64
+─────┼───────────────────────────────────
+   1 │ 1          -0.0    0.0     -0.0
+   2 │ 2           0.0   -0.0      2.054
+   3 │ 3          -0.0    2.054   -0.0
+
+
+VRES CAPACITY EXPANSION
+
+
+PRODUCER 1
+3×2 DataFrame
+ Row │ node    VRES_1
+     │ String  Float64
+─────┼─────────────────
+   1 │ 1        73.769
+   2 │ 2         0.0
+   3 │ 3       357.238
+
+
+PRODUCER 2
+3×2 DataFrame
+ Row │ node    VRES_1
+     │ String  Float64
+─────┼─────────────────
+   1 │ 1         0.0
+   2 │ 2        31.39
+   3 │ 3       399.618
+
+
+
+
+CONV CAPACITY EXPANSION
+
+
+PRODUCER 1
+3×2 DataFrame
+ Row │ node    conv_1
+     │ String  Float64
+─────┼─────────────────
+   1 │ 1           0.0
+   2 │ 2           0.0
+   3 │ 3           0.0
+
+
+PRODUCER 2
+3×2 DataFrame
+ Row │ node    conv_1
+     │ String  Float64
+─────┼─────────────────
+   1 │ 1           0.0
+   2 │ 2           0.0
+   3 │ 3           0.0
+
+
+
+
+VRES GENERATION
+
+
+PRODUCER 1
+scenario 1
+3×2 DataFrame
+ Row │ node    VRES_1
+     │ String  Float64
+─────┼─────────────────
+   1 │ 1       29826.5
+   2 │ 2           0.0
+   3 │ 3       72019.2
+
+
+scenario 2
+3×2 DataFrame
+ Row │ node    VRES_1
+     │ String  Float64
+─────┼─────────────────
+   1 │ 1       23861.2
+   2 │ 2           0.0
+   3 │ 3       72019.2
+
+
+PRODUCER 2
+scenario 1
+3×2 DataFrame
+ Row │ node    VRES_1
+     │ String  Float64
+─────┼─────────────────
+   1 │ 1           0.0
+   2 │ 2       18528.9
+   3 │ 3       80563.0
+
+
+scenario 2
+3×2 DataFrame
+ Row │ node    VRES_1
+     │ String  Float64
+─────┼─────────────────
+   1 │ 1           0.0
+   2 │ 2       15881.9
+   3 │ 3       80563.0
+
+
+
+
+CONV GENERATION
+
+
+PRODUCER 1
+scenario 1
+3×2 DataFrame
+ Row │ node    conv_1
+     │ String  Float64
+─────┼─────────────────
+   1 │ 1           0.0
+   2 │ 2        3360.0
+   3 │ 3        3360.0
+
+
+scenario 2
+3×2 DataFrame
+ Row │ node    conv_1
+     │ String  Float64
+─────┼─────────────────
+   1 │ 1           0.0
+   2 │ 2        3360.0
+   3 │ 3        3360.0
+
+
+PRODUCER 2
+scenario 1
+3×2 DataFrame
+ Row │ node    conv_1
+     │ String  Float64
+─────┼─────────────────
+   1 │ 1        5376.0
+   2 │ 2           0.0
+   3 │ 3        3360.0
+
+
+scenario 2
+3×2 DataFrame
+ Row │ node    conv_1
+     │ String  Float64
+─────┼─────────────────
+   1 │ 1        5376.0
+   2 │ 2           0.0
+   3 │ 3        3360.0
+
+
+
+
+ENERGY FLOW
+
+
+flow: 1 -> 2 
+2×3 DataFrame
+ Row │ scenario  time_1   time_2
+     │ Int64     Float64  Float64
+─────┼────────────────────────────
+   1 │        1    336.0    336.0
+   2 │        2   -336.0    336.0
+
+
+flow: 2 -> 1 
+2×3 DataFrame
+ Row │ scenario  time_1   time_2
+     │ Int64     Float64  Float64
+─────┼────────────────────────────
+   1 │        1      0.0      0.0
+   2 │        2      0.0      0.0
+
+
+flow: 1 -> 3 
+2×3 DataFrame
+ Row │ scenario  time_1   time_2
+     │ Int64     Float64  Float64
+─────┼────────────────────────────
+   1 │        1   -336.0   -336.0
+   2 │        2   -336.0   -336.0
+
+
+flow: 3 -> 1 
+2×3 DataFrame
+ Row │ scenario  time_1   time_2
+     │ Int64     Float64  Float64
+─────┼────────────────────────────
+   1 │        1      0.0      0.0
+   2 │        2      0.0      0.0
+
+
+flow: 2 -> 3 
+2×3 DataFrame
+ Row │ scenario  time_1    time_2
+     │ Int64     Float64   Float64
+─────┼──────────────────────────────
+   1 │        1  -1026.31  -1026.31
+   2 │        2   1026.31  -1026.31
+
+
+flow: 3 -> 2 
+2×3 DataFrame
+ Row │ scenario  time_1   time_2
+     │ Int64     Float64  Float64
+─────┼────────────────────────────
+   1 │        1      0.0      0.0
+   2 │        2      0.0      0.0
+
+
+
+
+TOTAL PRODUCTION/CONSUMPTION
+
+
+2×5 DataFrame
+ Row │ scenario  VRES_generation  VRES_share  conv_generation  consumption
+     │ Int64     Float64          Float64     Float64          Float64
+─────┼─────────────────────────────────────────────────────────────────────
+   1 │        1        2.00938e5        93.0          15456.0    2.16394e5
+   2 │        2        1.92325e5        93.0          15456.0    2.07781e5
+
+

@@ -17,7 +17,7 @@ Arguments of the function:
 """
 
 
-function print_output(src_link::String, ip::initial_parameters, ob_val::Float64, l_plus::Array{Float64}, g_VRES_plus::Array{Float64}, g_conv_plus::Array{Float64}, g_VRES::Array{Float64}, g_conv::Array{Float64}, f::Array{Float64}, q::Array{Float64}, incentives::Array{Int}, gen_budget::Array{Float64}, model::String, sf::Float64)
+function print_output(src_link::String, ip::initial_parameters, ob_val::Float64, l_plus::Array{Float64}, g_VRES_plus::Array{Float64}, g_conv_plus::Array{Float64}, g_VRES::Array{Float64}, g_conv::Array{Float64}, f::Array{Float64}, q::Array{Float64}, incentives::Array{Float64}, gen_budget::Array{Float64}, model::String, sf::Float64)
     
     #rounding all the values 
     round_digits = 3
@@ -30,11 +30,11 @@ function print_output(src_link::String, ip::initial_parameters, ob_val::Float64,
     f = round.(f, digits = round_digits)
     
     if model == "single_level"
-        io = open(src_link*"/single_level_problem_output_"* string(Int(input_parameters.transm.budget_limit)) * "_budget_per_line_" * string(Int(input_parameters.conv.CO2_tax[1])) * "_tax_"* string(incentives[1]) * "_incentives_" * string(gen_budget[1])* "_gen_exp_budget.txt" ,"w")
+        io = open(src_link*"/single_level_problem_output_"* string(Int(input_parameters.transm.budget_limit)) * "_budget_per_line_" * string(Int(input_parameters.conv.CO2_tax[1])) * "_tax_"* string(incentives[1]) * "_incentives_" * string(gen_budget[1]) * "_gen_exp_budget_com_1_" * string(gen_budget[2])* "_gen_exp_budget_com_2.txt","w")
     elseif model == "bi_level_cournot"
-        io = open(src_link*"/bi_level_cournot_problem_output_" * string(Int(input_parameters.transm.budget_limit)) * "_budget_per_line_" * string(Int(input_parameters.conv.CO2_tax[1])) * "_tax_"* string(incentives[1]) * "_incentives_" * string(gen_budget[1])* "_gen_exp_budget.txt" ,"w")
+        io = open(src_link*"/bi_level_cournot_problem_output_" * string(Int(input_parameters.transm.budget_limit)) * "_budget_per_line_" * string(Int(input_parameters.conv.CO2_tax[1])) * "_tax_"* string(incentives[1]) * "_incentives_" * string(gen_budget[1]) * "_gen_exp_budget_com_1_" * string(gen_budget[2])* "_gen_exp_budget_com_2.txt" ,"w")
     else 
-        io = open(src_link*"/bi_level_perfect_problem_output_" * string(Int(input_parameters.transm.budget_limit)) * "_budget_per_line_" * string(Int(input_parameters.conv.CO2_tax[1])) * "_tax_"* string(incentives[1]) * "_incentives_" * string(gen_budget[1])* "_gen_exp_budget.txt" ,"w")
+        io = open(src_link*"/bi_level_perfect_problem_output_" * string(Int(input_parameters.transm.budget_limit)) * "_budget_per_line_" * string(Int(input_parameters.conv.CO2_tax[1])) * "_tax_"* string(incentives[1]) * "_incentives_" * string(gen_budget[1]) * "_gen_exp_budget_com_1_" * string(gen_budget[2])* "_gen_exp_budget_com_2.txt" ,"w")
     end
 
     println(io, "OBJECTIVE FUNCTION VALUE  $(ob_val*sf)")
@@ -178,72 +178,151 @@ function print_output(src_link::String, ip::initial_parameters, ob_val::Float64,
     println(io, df_total)
     println(io, "\n")
 
+    println(io, "NODAL SLOPE")
+    println(io, "\n")
+    for n = 1:ip.num_nodes 
+        println(io, "NODE $n:")
+        df_node = DataFrame()
+        df_node.scenario = 1:ip.num_scen
+            
+            for t = 1:ip.num_time_periods
+                insertcols!(df_node, t+1, "time_$t" => ip.id_slope[:,t,n] )
+            end
+
+        println(io, df_node)
+        println(io, "\n")
+    end
+
+    println(io, "NODAL INTERCEPT")
+    println(io, "\n")
+    for n = 1:ip.num_nodes 
+        println(io, "NODE $n:")
+        df_node = DataFrame()
+        df_node.scenario = 1:ip.num_scen
+            
+            for t = 1:ip.num_time_periods
+                insertcols!(df_node, t+1, "time_$t" => ip.id_intercept[:,t,n] )
+            end
+
+        println(io, df_node)
+        println(io, "\n")
+    end
+
+
+    println(io, "NODES' PRICES")
+    println(io, "\n")
+
+    for n = 1:ip.num_nodes 
+        println(io, "NODE $n")
+        df_node = DataFrame()
+        df_node.scenario = 1:ip.num_scen
+            
+            for t = 1:ip.num_time_periods
+                insertcols!(df_node, t+1, "time_$t" => ip.id_intercept[:,t,n] .- 0.5 .* ip.id_slope[:,t,n] .* q[:,t,n]./ip.time_periods[t] )
+            end
+
+        println(io, df_node)
+        println(io, "\n")
+        
+    end
+
+    println(io, "NODAL REVENUES")
+    println(io, "\n")
+
+    for n = 1:ip.num_nodes 
+        println(io, "NODE $n")
+        df_node = DataFrame()
+        df_node.scenario = 1:ip.num_scen
+        
+        n_rev_s = zeros(ip.num_scen)
+        for t = 1:ip.num_time_periods
+            n_rev_s = n_rev_s.+(ip.id_intercept[:,t,n] .- 0.5 .* ip.id_slope[:,t,n] .* q[:,t,n]./ip.time_periods[t]).*q[:,t,n]
+        end
+        insertcols!(df_node, 2, "revenue" => n_rev_s)
+
+        println(io, df_node)
+        println(io, "\n")
+        
+    end
+
+
+    println(io, "TSO'S EXPENCES")
+    println(io, "\n")
+    df_TSO = DataFrame()
+
+
+    # TSO INV EXPENSES
+    TSO_inv_exp = sum( - sum( ip.transm.investment_costs[n,m]*0.5*l_plus[n,m] for m in 1:ip.num_nodes) for n in 1:ip.num_nodes)/scaling_factor/obg_scaling_factor
+
+    # TSO OP COSTS
+
+    TSO_op_exp = sum(- sum(
+        ip.transm.maintenance_costs[n,m]*
+        (ip.transm.installed_capacities[n,m] + 0.5 * l_plus[n,m])
+        for m in 1:ip.num_nodes)
+    for n in 1:ip.num_nodes)
+
+    insertcols!(df_TSO, 1, "INV COSTS" => TSO_inv_exp )
+    insertcols!(df_TSO, 2, "OP COSTS" => TSO_op_exp )
+    println(io, df_TSO)
+    println(io, "\n")
+
+
+    println(io, "COMPANIES VRES FIXED COSTS")
+    println(io, "\n")
+
+    df_vres_costs = DataFrame()
+    df_vres_costs.producer = 1:ip.num_prod
+    for n in 1:ip.num_nodes
+        node_exp = Array{Float64}(undef,ip.num_prod)
+        for i = 1:ip.num_prod
+            node_exp[i] = sum( ip.vres.maintenance_costs[n,i,r]*(ip.vres.installed_capacities[n,i,r] + g_VRES_plus[n,i,r]) + ip.vres.investment_costs[n,i,r]*g_VRES_plus[n,i,r] for r in 1:ip.num_VRES)
+        end
+        insertcols!(df_vres_costs, n+1, "node_$n" => node_exp )
+    end
+
+    println(io, df_vres_costs)
+    println(io, "\n")
+
+    println(io, "COMPANIES CONV FIXED COSTS")
+    println(io, "\n")
+
+    df_conv_costs = DataFrame()
+    df_conv_costs.producer = 1:ip.num_prod
+    for n in 1:ip.num_nodes
+        node_exp = Array{Float64}(undef,ip.num_prod)
+        for i = 1:ip.num_prod
+            node_exp[i] = sum( ip.conv.maintenance_costs[n,i,r]*(ip.conv.installed_capacities[n,i,r] + g_conv_plus[n,i,r]) + ip.conv.investment_costs[n,i,r]*g_conv_plus[n,i,r] for r in 1:ip.num_conv) 
+        end
+        insertcols!(df_conv_costs, n+1, "node_$n" => node_exp )
+    end
+
+    println(io, df_conv_costs)
+    println(io, "\n")
+
+    println(io, "COMPANIES CONV VARIABLE COSTS")
+    println(io, "\n")
+
+    for i = 1:ip.num_prod
+        println(io, "Producer $i")
+        println(io, "\n")
+        df_conv_costs_var = DataFrame()
+        df_conv_costs_var.scenario = 1:ip.num_scen
+        for n in 1:ip.num_nodes
+            node_exp = Array{Float64}(undef,ip.num_scen)
+            for s = 1:ip.num_scen
+                node_exp[s] = sum( (ip.conv.operational_costs[n,i,e] + ip.conv.CO2_tax[e])*g_conv[s,t,n,i,e] for t in 1:ip.num_time_periods, e in 1:ip.num_conv)
+            end
+            insertcols!(df_conv_costs_var, n+1, "node_$n" => node_exp )
+        end
+        println(io, df_conv_costs_var)
+        println(io, "\n")
+    end
+
 
 
     close(io)
 end
-
-
-""" 
-!WORKS only for the 3 nodes instance with 2 porucers yet! The .xlsx files with correspondent names 
-and sheets should already exist prior to the call of the function.
-function write_xlsx_output prints the capacity expansion relatedoutput resutling from the model optimisation 
-    in the user friendly format that is further saved in the correspondent .xlsx file 
-    in the folder specified in the arguments of the function with the first sheet correspondet to vres, 
-    second to conventional and the third to transmission parameters respectively
-Arguments of the function:
-
-""" 
-function write_xlsx_output(data_src_link::String, input_parameters::initial_parameters, vres::Array{Float64}, conv::Array{Float64}, transm::Array{Float64}, market::String)
-    round_digits = 3
-    columns_vres = Vector()
-
-    g_VRES_plus = [ vres[1,:,:]'
-                    vres[2,:,:]'
-                    vres[3,:,:]']
-
-    push!(columns_vres, round.(g_VRES_plus[:,1], digits = round_digits))
-    push!(columns_vres, round.(g_VRES_plus[:,2], digits = round_digits))
-
-    columns_conv = Vector()
-
-    g_conv_plus = [ conv[1,:,:]'
-                    conv[2,:,:]'
-                    conv[3,:,:]']
-          
-
-    push!(columns_conv, round.(g_conv_plus[:,1], digits = round_digits))
-    push!(columns_conv, round.(g_conv_plus[:,2], digits = round_digits))
-    
- 
-    columns_transm = Vector()
-
-    push!(columns_transm, round.(transm[:,1], digits = round_digits))
-    push!(columns_transm, round.(transm[:,2], digits = round_digits))
-    push!(columns_transm, round.(transm[:,3], digits = round_digits))
-
-    labels_transm = [ "node_1", "node_2", "node_3"]
-    labels = [ "producer_1", "producer_2"]
-
-    XLSX.openxlsx(data_src_link*"/" * market * "_"* (input_parameters.transm.budget_limit*scaling_factor == 1000000 ? "1M" : "100K")*"_budget_per_line.xlsx", mode="rw") do xf
-        sheet = xf["Sheet1"]
-        @show sheet
-        XLSX.writetable!(sheet, columns_vres, labels, anchor_cell=XLSX.CellRef("B2"))
-        #XLSX.rename!(sheet, "/vres")
-
-        sheet = xf["Sheet2"]
-        XLSX.writetable!(sheet, columns_conv, labels, anchor_cell=XLSX.CellRef("B2"))
-        #XLSX.rename!(sheet, "/conv")
-
-        sheet = xf["Sheet3"]
-        XLSX.writetable!(sheet, columns_transm, labels_transm, anchor_cell=XLSX.CellRef("B2"))
-        #XLSX.rename!(sheet, "transm")
-
-
-    end
-end
-
-
 
 # function to calculate the duality gap for the lower-level problem
 function check_duality_gap(bi_level_problem::JuMP.Model, inpa::initial_parameters, market::String)

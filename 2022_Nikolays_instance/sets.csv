@@ -1,0 +1,3 @@
+Nodes,days in scenario ,Scenarios probabiblity,Time periods,VRES sources,Conventional sources,Producers 
+1,2,0.5,336,solar,biomass,1
+2,2,0.5,336,,,2

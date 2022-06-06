@@ -9,8 +9,8 @@ const interest_rate = 0.05
 Nodes = collect(skipmissing(DataFrame(CSV.File(data_src_link  * "/sets.csv"))[!,1]))
 N_nodes = length(Nodes)
 
-# Days allocted to each scenariio 
-S_days = collect(skipmissing(DataFrame(CSV.File(data_src_link  * "/sets.csv"))[!,2]))
+# Time periods allocted to each scenariio 
+S_T = collect(skipmissing(DataFrame(CSV.File(data_src_link  * "/sets.csv"))[!,2]))
 
 # Scenarios probabilities
 S_prob = collect(skipmissing(DataFrame(CSV.File(data_src_link  * "/sets.csv"))[!,3]))
@@ -49,12 +49,17 @@ id_intercept = Array{Float64}(undef, N_scen, N_T, N_nodes)
 for n = 1:N_nodes 
     node_data = (Matrix(DataFrame(CSV.File(data_src_link * "/inverse_demand/" * "demand_and_prices_" * string(n) * ".csv"))[!,2:3]))
     for s = 1:N_scen
-        @show sum(S_days[1:s])-S_days[s]+1
-        scenario_data = node_data[sum(S_days[1:s])-S_days[s]+1 : sum(S_days[1:s]), :]
+        @show sum(S_T[1:s])-S_T[s]+1
+        scenario_data = node_data[sum(S_T[1:s])-S_T[s]+1 : sum(S_T[1:s]), :]
         @show scenario_data[:, 1]
+        @show scenario_data[:, 2]
         for t = 1:N_T
             id_slope[s,t,n] = - round(scenario_data[t, 2] * 1 / (epsilon * scenario_data[t, 1]), digits = 4)
             id_intercept[s,t,n] =  round(scenario_data[t, 2] * 1 + id_slope[s,t,n] * scenario_data[t, 1], digits = 4)
+
+            #id_slope[s,t,n] = id_slope[s,t,n]/T[t]
+            #id_intercept[s,t,n] = id_intercept[s,t,n]/T[t]
+
         end
     end
 end
@@ -82,8 +87,7 @@ Distance_lines = Matrix(DataFrame(CSV.File(data_src_link * "/transmission_lines/
 Lifetime_lines = Matrix(DataFrame(CSV.File(data_src_link * "/transmission_lines/" * "lines_lifetime.csv"))[!,:])
 
 # Investment costs (considering the expansion)
-I_lines = equivalent_annual_cost.(float.(Costs_lines .* Distance_lines .+ Converter_costs_lines),
-float.(Lifetime_lines), interest_rate) 
+I_lines = equivalent_annual_cost.(float.(Costs_lines .* Distance_lines .+ Converter_costs_lines), float.(Lifetime_lines)*6, interest_rate) 
 I_lines = replace(I_lines, NaN=>0)
 
 I_lines = round.(I_lines,digits = 4)
@@ -104,6 +108,8 @@ B_lines = Matrix(DataFrame(CSV.File(data_src_link * "/transmission_lines/" * "bu
 M_lines = Matrix(DataFrame(CSV.File(data_src_link * "/transmission_lines/" * "lines_maintenance_costs.csv"))[!,:]) .* I_lines
 #scalling
 M_lines = M_lines./scaling_factor
+#levelising for 2 months 
+M_lines = M_lines./6
 #TRANSM = transmission_parameters(round.(L_max, digits = max_digits), round.(M_lines, digits = max_digits), round.(I_lines, digits = max_digits), round.(B_lines, digits = max_digits))
 TRANSM = transmission_parameters(L_max, M_lines, I_lines, B_lines)
 
@@ -126,6 +132,10 @@ M_conv = Array{Float64}(undef, N_nodes, N_I, N_E )
 for i in 1:N_I
     M_conv[:,i,:] = Matrix(DataFrame(CSV.File(data_src_link * "/conventional_generation_units/fixed_maintenance_costs/" * "fixed_maintenance_costs_producer_"* string(i)* ".csv"))[!,2:N_E+1]) .* 1000
 end
+
+#levelising for 2 months 
+M_conv = M_conv./6
+@show M_conv
 #scalling
 #M_conv = M_conv./scaling_factor
 
@@ -169,7 +179,7 @@ end
 
 # Annualised investment costs at each node for conventional units 
 I_conv= Array{Float64}(undef, N_nodes, N_I, N_E )
-I_conv = equivalent_annual_cost.(Investment_conv .* 1000, Lifetime_conv, interest_rate) 
+I_conv = equivalent_annual_cost.(Investment_conv .* 1000, Lifetime_conv*6, interest_rate) 
 
 I_conv = round.(I_conv, digits = 4)
 #scalling 
@@ -212,6 +222,17 @@ M_VRES = Array{Float64}(undef, N_nodes, N_I, N_R )
 for i in 1:N_I
     M_VRES[:,i,:] = Matrix(DataFrame(CSV.File(data_src_link * "/VRES_generation_units/maintenance_costs/" * "maintenance_costs_producer_"* string(i)* ".csv"))[!,2:N_R+1]) .* 1000
 end
+
+# Levelising for 2 months
+M_VRES = M_VRES./6
+@show M_VRES
+
+#reading the data about vres investemnt costs incentives
+#incentives = Array(DataFrame(CSV.File(data_src_link * "/VRES_generation_units/incentives.csv"))[!,2])
+#for n = 1:N_nodes
+   # M_VRES[n,:,:] = M_VRES[n,:,:].*(1-incentives[n]/100)
+#end
+
 #M_VRES = M_VRES./100
 #scalling
 #M_VRES = M_VRES./scaling_factor
@@ -231,7 +252,7 @@ end
 
 # Annualised investment costs at each node for VRES units 
 I_VRES= Array{Float64}(undef, N_nodes, N_I, N_R )
-I_VRES = equivalent_annual_cost.(Investment_VRES .* 1000, Lifetime_VRES, interest_rate) 
+I_VRES = equivalent_annual_cost.(Investment_VRES .* 1000, Lifetime_VRES*6, interest_rate) 
 #scalling 
 #I_VRES = I_VRES./scaling_factor
 
@@ -243,6 +264,7 @@ for n = 1:N_nodes
     I_VRES[n,:,:] = I_VRES[n,:,:].*(1-incentives[n]/100)
 end
 
+@show I_VRES
 # Availability factor 
 # create a structure to keep the availability factor values
 A_VRES = Array{Float64}(undef, N_scen, N_T, N_nodes, N_R)
@@ -250,8 +272,8 @@ A_VRES = Array{Float64}(undef, N_scen, N_T, N_nodes, N_R)
 for n = 1:N_nodes 
     node_data = Matrix(DataFrame(CSV.File(data_src_link * "/VRES_generation_units/availability_factor/" * "hourly_data_node_$n.csv"))[!,2:end])
     for s = 1:N_scen
-        @show sum(S_days[1:s])-S_days[s]+1
-        scenario_data = node_data[sum(S_days[1:s])-S_days[s]+1 : sum(S_days[1:s]), :]
+        @show sum(S_T[1:s])-S_T[s]+1
+        scenario_data = node_data[sum(S_T[1:s])-S_T[s]+1 : sum(S_T[1:s]), :]
         for t = 1:N_T
             for r in 1:N_R
                 A_VRES[s,t,n,r] = scenario_data[t,r]
